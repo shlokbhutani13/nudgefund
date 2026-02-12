@@ -42,10 +42,13 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": true,
+      "baseUrl": "/nudgefund/"
     },
     "extra": {
-      "router": {},
+      "router": {
+        "baseUrl": "/nudgefund/"
+      },
       "eas": {
         "projectId": "8923b86c-140b-4079-96f3-b1ca5cf27d79"
       }
