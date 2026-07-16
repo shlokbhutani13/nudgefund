@@ -154,7 +154,8 @@ npm run test:e2e
 Check the Edge Function from the repository root:
 
 ```bash
-deno check supabase/functions/financial-coach/index.ts
+deno check --config supabase/functions/deno.json \
+  supabase/functions/financial-coach/index.ts
 ```
 
 The current suite covers domain calculations, validation, auth modes, local and Supabase repositories, AI contracts, quota security, login, dashboard, purchase completion, reports, desktop flow, mobile overflow, dark mode, and reduced motion.

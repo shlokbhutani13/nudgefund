@@ -53,7 +53,7 @@ jobs:
         run: npm run typecheck
 
       - name: Check Edge Function
-        run: deno check ../supabase/functions/financial-coach/index.ts
+        run: deno check --config ../supabase/functions/deno.json ../supabase/functions/financial-coach/index.ts
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium

@@ -1,5 +1,5 @@
-import { GoogleGenAI } from "npm:@google/genai@2.12.0";
-import { createClient } from "npm:@supabase/supabase-js@2.110.6";
+import { GoogleGenAI } from "npm:@google/genai@2.11.0";
+import { createClient } from "npm:@supabase/supabase-js@2.110.5";
 import {
   parseMonthlyReport,
   parseQuestions,

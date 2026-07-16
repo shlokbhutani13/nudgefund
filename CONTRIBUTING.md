@@ -18,7 +18,7 @@ npm run typecheck
 npm run test:e2e
 ```
 
-Run `deno check supabase/functions/financial-coach/index.ts` when you change the Edge Function or shared server contracts.
+Run `deno check --config supabase/functions/deno.json supabase/functions/financial-coach/index.ts` when you change the Edge Function or shared server contracts.
 
 ## Project boundaries
 

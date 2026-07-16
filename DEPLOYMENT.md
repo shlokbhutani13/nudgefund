@@ -17,7 +17,8 @@ npm run typecheck
 npx playwright install chromium
 npm run test:e2e
 cd ..
-deno check supabase/functions/financial-coach/index.ts
+deno check --config supabase/functions/deno.json \
+  supabase/functions/financial-coach/index.ts
 ```
 
 Stop if any command fails.
