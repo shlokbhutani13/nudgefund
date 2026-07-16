@@ -20,6 +20,13 @@ npm run test:e2e
 
 Run `deno check --config supabase/functions/deno.json supabase/functions/financial-coach/index.ts` when you change the Edge Function or shared server contracts.
 
+Regenerate the README screenshots only after a deliberate visual review:
+
+```bash
+cd react-expo-app
+UPDATE_README_SCREENSHOTS=1 npm run test:e2e
+```
+
 ## Project boundaries
 
 - Screens consume repositories and the financial coach through `AppServicesContext`.

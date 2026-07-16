@@ -10,6 +10,23 @@ const assetsDirectory = path.resolve(
   "../docs/assets",
 );
 
+async function captureReadmeScreenshot(
+  page: Page,
+  filename: string,
+) {
+  if (
+    process.env.UPDATE_README_SCREENSHOTS !== "1"
+  ) {
+    return;
+  }
+  await page.screenshot({
+    path: path.join(assetsDirectory, filename),
+    type: "jpeg",
+    quality: 88,
+    fullPage: true,
+  });
+}
+
 function captureBrowserErrors(page: Page) {
   const errors: string[] = [];
   page.on("console", (message) => {
@@ -63,15 +80,10 @@ test("demo mode completes the full product story", async ({
       "Make spending decisions on purpose.",
     ),
   ).toBeVisible();
-  await page.screenshot({
-    path: path.join(
-      assetsDirectory,
-      "nudgefund-login.jpg",
-    ),
-    type: "jpeg",
-    quality: 88,
-    fullPage: true,
-  });
+  await captureReadmeScreenshot(
+    page,
+    "nudgefund-login.jpg",
+  );
 
   await page
     .getByRole("button", { name: "Explore demo" })
@@ -123,15 +135,10 @@ test("demo mode completes the full product story", async ({
       "A pause may serve you better.",
     ),
   ).toBeVisible();
-  await page.screenshot({
-    path: path.join(
-      assetsDirectory,
-      "nudgefund-purchase-check.jpg",
-    ),
-    type: "jpeg",
-    quality: 88,
-    fullPage: true,
-  });
+  await captureReadmeScreenshot(
+    page,
+    "nudgefund-purchase-check.jpg",
+  );
 
   await page
     .getByRole("button", {
@@ -160,15 +167,10 @@ test("demo mode completes the full product story", async ({
   await expect(
     page.getByText("Money redirected"),
   ).toBeVisible();
-  await page.screenshot({
-    path: path.join(
-      assetsDirectory,
-      "nudgefund-dashboard.jpg",
-    ),
-    type: "jpeg",
-    quality: 88,
-    fullPage: true,
-  });
+  await captureReadmeScreenshot(
+    page,
+    "nudgefund-dashboard.jpg",
+  );
 
   await page
     .getByRole("tab", { name: "Growth" })
