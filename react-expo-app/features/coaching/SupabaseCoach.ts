@@ -3,7 +3,7 @@ import {
   parseMonthlyReport,
   parseQuestions,
   parseVerdict,
-} from "../../../supabase/functions/_shared/contracts";
+} from "./responseValidation";
 import type {
   FinancialCoach,
 } from "./contracts";

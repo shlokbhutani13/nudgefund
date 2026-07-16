@@ -1,183 +1,211 @@
-import React, { useState, useCallback } from 'react';
-import { Text, View, StyleSheet, ActivityIndicator } from 'react-native';
-import { useAuth } from '../../lib/AuthContext';
-import { supabase } from '../../lib/supabaseClient'; 
-import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import {
+  router,
+  useFocusEffect,
+} from "expo-router";
+import { AppButton } from "@/components/ui/AppButton";
+import { AppScreen } from "@/components/ui/AppScreen";
+import {
+  spacing,
+  type,
+  useAppTheme,
+} from "@/constants/theme";
+import { DashboardView } from "@/features/dashboard/DashboardView";
+import type { PurchaseDecision } from "@/features/decisions/types";
+import { ProfileEditor } from "@/features/profile/ProfileEditor";
+import type { UserProfile } from "@/features/profile/types";
+import { useAppServices } from "@/lib/AppServicesContext";
+import { useAuth } from "@/lib/AuthContext";
 
-// Define the precise structure needed for the calculation
-type PurchaseRecord = {
-  amount: number;
-  final_amount: number;
+const demoProfile: UserProfile = {
+  displayName: "Maya",
+  currencyCode: "USD",
+  monthlySavingsGoal: 300,
 };
 
-export default function HomeScreen() {
-  const { session, user } = useAuth();
-  const [totalSaved, setTotalSaved] = useState<number | null>(null);
+export default function OverviewScreen() {
+  const palette = useAppTheme();
+  const services = useAppServices();
+  const { mode, signOut, user } = useAuth();
+  const [profile, setProfile] =
+    useState<UserProfile | null>(null);
+  const [decisions, setDecisions] = useState<
+    PurchaseDecision[]
+  >([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [editingProfile, setEditingProfile] =
+    useState(false);
 
-  // --- DATA FETCHING (Unchanged) ---
-  const fetchSavingsData = async () => {
-    if (!supabase || !session?.user?.id) {
-      setLoading(false);
-      return;
-    }
-
+  const load = useCallback(() => {
+    let active = true;
     setLoading(true);
-    
-    const { data, error } = await supabase
-      .from('Purchases')
-      .select('amount, final_amount')
-      .eq('userId', session.user.id);
+    setError("");
 
-    if (!error && data) {
-      const savedAmount = data.reduce((sum, record: PurchaseRecord) => {
-        const saved = record.amount - record.final_amount;
-        return sum + (saved > 0 ? saved : 0); 
-      }, 0);
+    void Promise.all([
+      services.profiles.get(),
+      services.decisions.list(),
+    ])
+      .then(([nextProfile, nextDecisions]) => {
+        if (!active) return;
+        setProfile(nextProfile);
+        setDecisions(nextDecisions);
+      })
+      .catch((loadError) => {
+        if (!active) return;
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Your dashboard could not be loaded.",
+        );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-      setTotalSaved(savedAmount);
-    }
-    setLoading(false);
+    return () => {
+      active = false;
+    };
+  }, [services]);
+
+  useFocusEffect(load);
+
+  const saveProfile = async (
+    nextProfile: UserProfile,
+  ) => {
+    const saved =
+      await services.profiles.save(nextProfile);
+    setProfile(saved);
+    setEditingProfile(false);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchSavingsData();
-      return () => { };
-    }, [session])
-  );
+  if (loading) {
+    return (
+      <AppScreen scroll={false}>
+        <View style={styles.centered}>
+          <ActivityIndicator
+            color={palette.mint}
+            size="large"
+          />
+          <Text
+            style={[
+              styles.loadingText,
+              { color: palette.inkMuted },
+            ]}
+          >
+            Preparing your dashboard…
+          </Text>
+        </View>
+      </AppScreen>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppScreen scroll={false}>
+        <View style={styles.centered}>
+          <Text
+            style={[
+              styles.errorTitle,
+              { color: palette.ink },
+            ]}
+          >
+            Dashboard unavailable
+          </Text>
+          <Text
+            accessibilityRole="alert"
+            style={[
+              styles.errorBody,
+              { color: palette.risk },
+            ]}
+          >
+            {error}
+          </Text>
+          <AppButton
+            label="Try again"
+            onPress={() => {
+              const cleanup = load();
+              return cleanup;
+            }}
+          />
+        </View>
+      </AppScreen>
+    );
+  }
+
+  if (!profile || editingProfile) {
+    const initialProfile =
+      profile ??
+      (mode === "demo"
+        ? demoProfile
+        : {
+            displayName:
+              user?.email?.split("@")[0] ?? "",
+            currencyCode: "USD",
+            monthlySavingsGoal: 300,
+          });
+
+    return (
+      <AppScreen>
+        <ProfileEditor
+          initialProfile={initialProfile}
+          isDemo={mode === "demo"}
+          onCancel={
+            profile
+              ? () => setEditingProfile(false)
+              : undefined
+          }
+          onSave={saveProfile}
+        />
+      </AppScreen>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      
-      {/* 1. Header and Greeting */}
-      <View style={styles.header}>
-        <Text style={styles.greeting}>
-          Welcome, {user?.email?.split('@')[0] ?? 'there'}!
-        </Text>
-        <Text style={styles.tagline}>
-          Your financial intelligence dashboard.
-        </Text>
-      </View>
-
-      {/* 2. Main Savings Card (The prominent display) */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Total Wealth Saved</Text>
-        <Text style={styles.cardDescription}>
-          The cumulative amount you redirected from impulse buys to savings.
-        </Text>
-        
-        <View style={styles.savingsDisplay}>
-          {loading ? (
-            <ActivityIndicator size="large" color="#FFD700" />
-          ) : (
-            <Text style={styles.savedAmount}>
-              ${totalSaved === null 
-                ? '0.00' 
-                : totalSaved.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-              }
-            </Text>
-          )}
-        </View>
-        <Text style={styles.cardFooter}>
-            Tap 'Invest' to see this money work for you.
-        </Text>
-      </View>
-
-      {/* 3. Footer/Guidance Area */}
-      <View style={styles.guidanceArea}>
-          <Text style={styles.guidanceText}>
-              Navigate using the menu at the bottom.
-          </Text>
-      </View>
-    </View>
+    <DashboardView
+      currencyCode={profile.currencyCode}
+      decisions={decisions}
+      isDemo={mode === "demo"}
+      monthlyGoal={profile.monthlySavingsGoal}
+      name={profile.displayName}
+      onEditProfile={() =>
+        setEditingProfile(true)
+      }
+      onNewDecision={() =>
+        router.push("/(app)/budget/new")
+      }
+      onOpenDecisions={() =>
+        router.push("/(app)/budget")
+      }
+      onSignOut={() => void signOut()}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    // Sophisticated: Off-white background
-    backgroundColor: '#F5F5F5', 
-    padding: 25,
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.md,
+    maxWidth: 460,
+    width: "100%",
+    alignSelf: "center",
   },
-  header: {
-    paddingVertical: 20,
-    marginBottom: 20,
+  loadingText: {
+    ...type.body,
   },
-  greeting: {
-    fontSize: 30,
-    fontWeight: '800', // Extra bold for impact
-    color: '#2C3E50', // Deep Charcoal/Navy
+  errorTitle: {
+    ...type.heading,
   },
-  tagline: {
-    fontSize: 16,
-    color: '#7F8C8D', // Soft Gray
-    marginTop: 5,
-    fontWeight: '500',
+  errorBody: {
+    ...type.body,
+    textAlign: "center",
   },
-
-  // Card Styles
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12, // Slightly less rounded for sophistication
-    padding: 25,
-    // Subtle, focused shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.05, // Very light shadow
-    shadowRadius: 10,
-    elevation: 3,
-    alignItems: 'center',
-    marginBottom: 40,
-    borderLeftColor: '#FFD700', // Gold accent line
-    borderLeftWidth: 4,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#2C3E50',
-    marginBottom: 5,
-    textTransform: 'uppercase', // Sophisticated style
-    letterSpacing: 1,
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: '#95A5A6',
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  savingsDisplay: {
-    paddingVertical: 20,
-    width: '100%',
-    alignItems: 'center',
-  },
-  savedAmount: {
-    fontSize: 48,
-    fontWeight: '900', // Black font weight
-    color: '#FFD700', // Gold/Accent color
-    // Subtle shadow on text to make it pop
-    textShadowColor: 'rgba(0, 0, 0, 0.1)', 
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  cardFooter: {
-    marginTop: 15,
-    fontSize: 13,
-    color: '#95A5A6',
-    fontStyle: 'italic',
-  },
-
-  // Footer/Guidance Styles
-  guidanceArea: {
-    padding: 15,
-    borderTopWidth: 1,
-    borderTopColor: '#ECF0F1', // Very light gray separator
-  },
-  guidanceText: {
-      fontSize: 14,
-      textAlign: 'center',
-      color: '#34495E', // Muted dark color
-      fontWeight: '500',
-  }
 });

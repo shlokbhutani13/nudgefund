@@ -4,6 +4,11 @@ import {
   parseVerdict,
 } from "../../supabase/functions/_shared/contracts";
 import { buildPrompt } from "../../supabase/functions/_shared/prompt";
+import {
+  parseMonthlyReport as parseClientMonthlyReport,
+  parseQuestions as parseClientQuestions,
+  parseVerdict as parseClientVerdict,
+} from "@/features/coaching/responseValidation";
 
 test("questions contract requires exactly three non-empty strings", () => {
   expect(
@@ -83,4 +88,26 @@ test("prompts require JSON and an educational disclaimer", () => {
   expect(prompt).toContain("Return JSON only");
   expect(prompt).toContain("educational");
   expect(prompt).toContain('"questions"');
+});
+
+test("client and Edge validators accept the same stable response shapes", () => {
+  const questions = {
+    questions: ["One?", "Two?", "Three?"],
+  };
+  const verdict = {
+    verdict: "neutral",
+    reasons: ["The tradeoff is meaningful."],
+    recommendation: "Wait one day.",
+  };
+  const report = { text: "Review dining next." };
+
+  expect(parseClientQuestions(questions)).toEqual(
+    parseQuestions(questions),
+  );
+  expect(parseClientVerdict(verdict)).toEqual(
+    parseVerdict(verdict),
+  );
+  expect(parseClientMonthlyReport(report)).toEqual(
+    parseMonthlyReport(report),
+  );
 });

@@ -1,91 +1,99 @@
-import { Tabs, router } from 'expo-router';
-import { Button } from 'react-native';
-import { useAuth } from '../../lib/AuthContext';
-import Ionicons from '@expo/vector-icons/Ionicons'; 
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Tabs } from "expo-router";
+import { useWindowDimensions } from "react-native";
+import { useAppTheme } from "@/constants/theme";
 
 export default function AppLayout() {
-  const { signOut } = useAuth();
+  const palette = useAppTheme();
+  const { width } = useWindowDimensions();
+  const useSidebar = width >= 1100;
 
   return (
     <Tabs
-      screenOptions={({ route }) => ({
-        headerRight: () => (
-          <Button title="Logout" onPress={signOut} />
-        ),
-        headerLeft: () => {
-          // If the current route name is NOT 'index' (which is your Home screen),
-          // return the Home button component.
-          if (route.name !== 'index') {
-            return <Button title="Home" onPress={() => router.replace('/')} />;
-          }
-          // If the current route name IS 'index', return undefined to hide it.
-          return undefined; 
+      screenOptions={{
+        headerShown: false,
+        sceneStyle: {
+          backgroundColor: palette.background,
         },
-        
-        // Style for the active tab icon/label
-        tabBarActiveTintColor: '#007AFF',
-        
-        // --- IMPORTANT: HIDE THE BACK BUTTON ---
-        // Since this is the root navigator, setting this to undefined 
-        // ensures no back button is rendered (as there's nowhere to go back to).
-      })}
+        tabBarActiveTintColor: palette.ink,
+        tabBarInactiveTintColor: palette.inkMuted,
+        tabBarHideOnKeyboard: true,
+        tabBarPosition: useSidebar
+          ? "left"
+          : "bottom",
+        tabBarStyle: {
+          backgroundColor: palette.surface,
+          borderColor: palette.line,
+        },
+        tabBarItemStyle: {
+          minHeight: 52,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "700",
+        },
+      }}
     >
-      {/* 1. HOME Screen (Tab 1) */}
       <Tabs.Screen
-        name="index" // Matches app/(app)/index.tsx
+        name="index"
         options={{
-          href: null, // hide this tab
-          title: 'Home',
-          tabBarLabel: 'Home', // Text under the icon
+          title: "Overview",
+          tabBarAccessibilityLabel:
+            "Overview dashboard",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons
+              color={color}
+              name="home-outline"
+              size={size}
+            />
           ),
         }}
       />
-
-            {/* 2. NEW PURCHASE MODAL SCREEN: Hidden from tabs <--- ADD THIS BLOCK */}
       <Tabs.Screen
-        name="budget/new" // Target the route located at app/(app)/budget/new.tsx
+        name="budget"
         options={{
-          title: 'New Purchase', // The header title will still be set by the modal component itself
-          href: null,             // Hides the tab icon
-          headerShown: false,     // Hide the Tab's header on this screen (modal usually handles its own header)
-        }}
-      />
-      
-      {/* 2. INVEST Screen (Tab 2) */}
-      <Tabs.Screen
-        name="invest" // Matches app/(app)/invest.tsx
-        options={{
-          title: 'Investments', // Header title
-          tabBarLabel: 'Invest', // Text under the icon
+          title: "Decisions",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trending-up" size={size} color={color} />
+            <Ionicons
+              color={color}
+              name="list-outline"
+              size={size}
+            />
           ),
         }}
       />
-      
-      {/* 3. BUDGET Screen (Tab 3) */}
       <Tabs.Screen
-        name="budget" // Matches app/(app)/budget.tsx
+        name="invest"
         options={{
-          title: 'Budget',
-          tabBarLabel: 'Budget',
+          title: "Growth",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calculator" size={size} color={color} />
+            <Ionicons
+              color={color}
+              name="trending-up-outline"
+              size={size}
+            />
           ),
         }}
       />
-      
-      {/* 4. REPORT Screen (Tab 4) */}
       <Tabs.Screen
-        name="report" // Matches app/(app)/report.tsx
+        name="report"
         options={{
-          title: 'Reports',
-          tabBarLabel: 'Report',
+          title: "Reports",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart" size={size} color={color} />
+            <Ionicons
+              color={color}
+              name="bar-chart-outline"
+              size={size}
+            />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="budget/new"
+        options={{
+          href: null,
+          headerShown: false,
+          title: "Purchase check",
         }}
       />
     </Tabs>

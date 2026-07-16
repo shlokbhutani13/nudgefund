@@ -1,59 +1,117 @@
-import { Stack, SplashScreen, useSegments, useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { AuthProvider, useAuth } from '../lib/AuthContext';
+import {
+  DarkTheme,
+  DefaultTheme,
+  SplashScreen,
+  Stack,
+  ThemeProvider,
+  useRouter,
+  useSegments,
+} from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { useColorScheme } from "react-native";
+import {
+  colors,
+  darkColors,
+} from "@/constants/theme";
+import { AppServicesProvider } from "@/lib/AppServicesContext";
+import {
+  AuthProvider,
+  useAuth,
+} from "@/lib/AuthContext";
 
-// Keep the splash screen visible until the session check is complete
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync().catch(
+  () => undefined,
+);
 
-// This component handles the actual navigation logic based on auth state
 function InitialLayout() {
-  // Get the router instance
-  const router = useRouter(); 
-  const { user, isLoading } = useAuth();
+  const router = useRouter();
   const segments = useSegments();
-  
-  // Check if we are currently inside the (auth) route group
-  const inAuthGroup = segments[0] === '(auth)';
+  const { isLoading, mode } = useAuth();
+  const inAuthGroup = segments[0] === "(auth)";
 
-  // 1. Hide the splash screen once loading is complete
   useEffect(() => {
     if (!isLoading) {
-      SplashScreen.hideAsync();
+      void SplashScreen.hideAsync().catch(
+        () => undefined,
+      );
     }
   }, [isLoading]);
 
-  // 2. Handle the redirect logic
   useEffect(() => {
-    if (!isLoading) {
-      if (user && inAuthGroup) {
-        // User is logged in AND is on an auth screen (login/signup), redirect to home
-        router.replace('/(app)');
-      } else if (!user && !inAuthGroup) {
-        // User is NOT logged in AND is on an app screen (home), redirect to login
-        router.replace('/(auth)/login');
-      }
-    }
-  }, [user, isLoading, inAuthGroup]);
+    if (isLoading) return;
 
-  // Show nothing while the initial check is running
+    if (
+      mode === "signed-out" &&
+      !inAuthGroup
+    ) {
+      router.replace("/(auth)/login");
+    } else if (
+      mode !== "signed-out" &&
+      inAuthGroup
+    ) {
+      router.replace("/(app)");
+    }
+  }, [inAuthGroup, isLoading, mode, router]);
+
   if (isLoading) {
     return null;
   }
 
   return (
-    <Stack>
-      {/* Define your main route groups/stacks */}
-      <Stack.Screen name="(app)" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(app)" />
+      <Stack.Screen name="(auth)" />
     </Stack>
   );
 }
 
-// This is the root component that provides the AuthContext
+function AppTheme({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const dark = useColorScheme() === "dark";
+  const navigationTheme = dark
+    ? {
+        ...DarkTheme,
+        colors: {
+          ...DarkTheme.colors,
+          background: darkColors.background,
+          card: darkColors.surface,
+          border: darkColors.line,
+          primary: darkColors.mint,
+          text: darkColors.ink,
+        },
+      }
+    : {
+        ...DefaultTheme,
+        colors: {
+          ...DefaultTheme.colors,
+          background: colors.background,
+          card: colors.surface,
+          border: colors.line,
+          primary: colors.mint,
+          text: colors.ink,
+        },
+      };
+
+  return (
+    <ThemeProvider value={navigationTheme}>
+      <StatusBar style={dark ? "light" : "dark"} />
+      {children}
+    </ThemeProvider>
+  );
+}
+
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <InitialLayout />
-    </AuthProvider>
+    <AppTheme>
+      <AuthProvider>
+        <AppServicesProvider>
+          <InitialLayout />
+        </AppServicesProvider>
+      </AuthProvider>
+    </AppTheme>
   );
 }
