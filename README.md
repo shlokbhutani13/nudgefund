@@ -8,7 +8,7 @@
 
 NudgeFund runs on web, iOS, and Android from one Expo codebase. Reviewers can use the complete demo without credentials. Connected mode adds Supabase authentication, cross-device persistence, row-level security, and Gemini coaching through an authenticated Edge Function.
 
-> Deployment status: the repository is ready for deployment, but it does not claim a live production URL. Connected mode requires your own Supabase project and Gemini API key.
+> **Live web demo:** [nudgefund.vercel.app](https://nudgefund.vercel.app/). The credential-free demo mode is available immediately; connected mode requires a configured Supabase project and Gemini API key.
 
 ## Product
 
