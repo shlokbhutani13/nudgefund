@@ -50,7 +50,7 @@ function InitialLayout() {
       mode !== "signed-out" &&
       inAuthGroup
     ) {
-      router.replace("/(app)");
+      router.replace("/(app)/overview");
     }
   }, [inAuthGroup, isLoading, mode, router]);
 

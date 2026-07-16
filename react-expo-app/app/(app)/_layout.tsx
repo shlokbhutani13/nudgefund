@@ -35,7 +35,7 @@ export default function AppLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="overview"
         options={{
           title: "Overview",
           tabBarAccessibilityLabel:
@@ -94,6 +94,9 @@ export default function AppLayout() {
           href: null,
           headerShown: false,
           title: "Purchase check",
+          tabBarStyle: {
+            display: "none",
+          },
         }}
       />
     </Tabs>
