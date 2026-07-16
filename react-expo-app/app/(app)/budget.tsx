@@ -29,7 +29,7 @@ export default function BudgetScreen() {
 
   // Function to fetch data from Supabase
   const fetchDecisions = async () => {
-    if (!session?.user?.id) {
+    if (!supabase || !session?.user?.id) {
       setLoading(false);
       return;
     }

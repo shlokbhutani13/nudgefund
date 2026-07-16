@@ -46,7 +46,7 @@ export default function InvestScreen() {
   // --- DATA FETCHING LOGIC (omitted for brevity, assume it works) ---
   const fetchSavingsData = async () => {
     // ... (Your fetch logic)
-    if (!session?.user?.id) {
+    if (!supabase || !session?.user?.id) {
         setError("User session not found.");
         setLoading(false);
         return;

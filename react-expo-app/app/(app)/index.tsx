@@ -17,7 +17,7 @@ export default function HomeScreen() {
 
   // --- DATA FETCHING (Unchanged) ---
   const fetchSavingsData = async () => {
-    if (!session?.user?.id) {
+    if (!supabase || !session?.user?.id) {
       setLoading(false);
       return;
     }
@@ -52,7 +52,9 @@ export default function HomeScreen() {
       
       {/* 1. Header and Greeting */}
       <View style={styles.header}>
-        <Text style={styles.greeting}>Welcome, {user?.email.split('@')[0]}!</Text>
+        <Text style={styles.greeting}>
+          Welcome, {user?.email?.split('@')[0] ?? 'there'}!
+        </Text>
         <Text style={styles.tagline}>
           Your financial intelligence dashboard.
         </Text>
