@@ -10,6 +10,8 @@ NudgeFund runs on web, iOS, and Android from one Expo codebase. Reviewers can us
 
 > **Live web demo:** [nudgefund.vercel.app](https://nudgefund.vercel.app/). The credential-free demo mode is available immediately; connected mode requires a configured Supabase project and Gemini API key.
 
+- [Project overview in my portfolio](https://shlokbhutani13.github.io/)
+
 ## Product
 
 | Sign in or use the local demo | Review your monthly decisions |
