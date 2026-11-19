@@ -1,96 +1,54 @@
 <div align="center">
   <img src="react-expo-app/assets/images/icon.png" alt="NudgeFund icon" width="96" />
   <h1>NudgeFund</h1>
-  <p>A behavioral-finance app that helps you pause before discretionary purchases, record the final outcome, and explore what redirected money could support over time.</p>
+  <p>Pause before you buy, think it through, and see what that money could do instead.</p>
 </div>
 
-![CI](https://github.com/shlokbhutani13/nudgefund/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/shlokbhutani13/nudgefund/actions/workflows/ci.yml/badge.svg)](https://github.com/shlokbhutani13/nudgefund/actions/workflows/ci.yml)
 
-NudgeFund runs on web, iOS, and Android from one Expo codebase. Reviewers can use the complete demo without credentials. Connected mode adds Supabase authentication, cross-device persistence, row-level security, and Gemini coaching through an authenticated Edge Function.
+NudgeFund is a personal finance app for impulse purchases. Before you buy something, it asks you three quick questions, gives you a short coaching reply, and then tracks what you actually decided. It runs on web, iPhone and Android from one codebase.
 
-> **Live web demo:** [nudgefund.vercel.app](https://nudgefund.vercel.app/). The credential-free demo mode is available immediately; connected mode requires a configured Supabase project and Gemini API key.
+**Try it:** [nudgefund.vercel.app](https://nudgefund.vercel.app/). Click **Explore demo**, no account needed.
 
-- [Project overview in my portfolio](https://shlokbhutani13.github.io/)
-
-## Product
-
-| Sign in or use the local demo | Review your monthly decisions |
+| Sign in or try the demo | Your monthly decisions |
 | --- | --- |
 | ![NudgeFund login](docs/assets/nudgefund-login.jpg) | ![NudgeFund dashboard](docs/assets/nudgefund-dashboard.jpg) |
 
-| Complete a four-step purchase check |
+| The purchase check |
 | --- |
 | ![NudgeFund purchase check](docs/assets/nudgefund-purchase-check.jpg) |
 
-The core flow:
+## How it works
 
-1. Enter a planned purchase and amount.
-2. Answer three questions about need, alternatives, and tradeoffs.
-3. Review a practical coaching response.
-4. Record the final item and amount.
+1. Enter what you want to buy and how much it costs.
+2. Answer three questions: do you need it, what are the alternatives, and what's the trade-off.
+3. Read a short coaching reply.
+4. Record what you actually spent.
 
-The dashboard then tracks final spending, money redirected, goal progress, recent decisions, growth scenarios, and a monthly report.
+The dashboard then shows your spending, the money you kept, progress toward your goal, and a monthly report.
 
-## Two operating modes
+## Two modes
 
-| Mode | Account | Storage | Coaching |
-| --- | --- | --- | --- |
-| Demo | Not required | Browser or device only | Deterministic local responses |
-| Connected | Supabase email/password | Postgres with RLS | Authenticated Gemini Edge Function with local fallback |
+| | Demo | Signed in |
+| --- | --- | --- |
+| Account | Not needed | Email and password (Supabase) |
+| Where data lives | Your browser or phone only | Postgres, private to you |
+| Coaching | Built-in replies | Gemini, with built-in replies as a backup |
 
-Demo mode keeps data on the current browser or device. Clearing application storage can erase it. No Gemini request or cloud sync occurs in demo mode.
+In demo mode nothing leaves your device and no AI is called.
 
-## Architecture
+## Built with
 
-```mermaid
-flowchart LR
-  UI["Expo Router screens"] --> Services["App services context"]
-  Services --> Decisions["Decision repository"]
-  Services --> Profiles["Profile repository"]
-  Services --> Coach["Financial coach"]
+- Expo 58, React Native and TypeScript, with Expo Router
+- Supabase Auth, Postgres with row-level security, and an Edge Function for the AI coach
+- Gemini 2.5 Flash Lite, called only from the Edge Function so the API key never reaches the app
+- A limit of 12 AI requests per user per hour
 
-  Decisions --> Local["Local storage"]
-  Profiles --> Local
-  Coach --> Demo["Deterministic demo coach"]
+The screens never talk to Supabase directly. They go through small data and coaching interfaces, so the same screens work in demo mode and signed-in mode. More in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-  Decisions --> DB["Supabase Postgres + RLS"]
-  Profiles --> DB
-  Coach --> Edge["Authenticated Edge Function"]
-  Edge --> Quota["Private hourly quota"]
-  Edge --> Gemini["Gemini 2.5 Flash Lite"]
-```
+## Run it locally
 
-Screens depend on repository and coaching interfaces. They do not import Supabase directly. The same UI works with local adapters in demo mode and Supabase adapters in connected mode.
-
-Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the request flow, trust boundaries, and data model.
-
-## Engineering highlights
-
-- Expo Router with responsive web, iOS, Android, tablet, and dark-mode layouts
-- Supabase email authentication and portable session persistence
-- Postgres migrations with explicit grants and user-scoped row-level security
-- Private AI usage events and a 12-request rolling hourly limit
-- Gemini key isolated in Edge Function secrets
-- Stable validation for AI inputs and structured outputs
-- Deterministic offline coaching when AI or the network is unavailable
-- Repository adapters for local and connected persistence
-- Static web export and Vercel configuration
-- Jest, React Native Testing Library, ESLint, TypeScript, Expo Doctor, Deno checks, and GitHub Actions
-
-## Stack
-
-- Expo 57, React Native 0.86, React 19, TypeScript 6
-- Expo Router and React Navigation
-- Supabase Auth, Postgres, RLS, and Edge Functions
-- Gemini 2.5 Flash Lite through `@google/genai`
-- Jest Expo and React Native Testing Library
-
-## Run the demo locally
-
-Requirements:
-
-- Node.js 22
-- npm
+You need Node.js 22.
 
 ```bash
 git clone https://github.com/shlokbhutani13/nudgefund.git
@@ -99,84 +57,29 @@ npm ci
 npm run web
 ```
 
-Open the URL printed by Expo and choose **Explore demo**. No environment variables are required.
+Open the link Expo prints and choose **Explore demo**. No setup needed. Use `npm run ios` or `npm run android` for phones.
 
-Native options:
+To use real accounts and AI coaching, connect your own Supabase project. The steps are in [DEPLOYMENT.md](DEPLOYMENT.md).
 
-```bash
-npm run ios
-npm run android
-```
-
-## Enable connected mode
-
-Create a Supabase project that you control. Do not reuse another contributor's project or credentials.
+## Tests
 
 ```bash
 cd react-expo-app
-cp .env.example .env.local
-```
-
-Set the public client values:
-
-```dotenv
-EXPO_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
-```
-
-From the repository root, link your project and apply the backend only when you intend to deploy it:
-
-```bash
-npx supabase login
-npx supabase link --project-ref YOUR_PROJECT_REF
-npx supabase db push
-npx supabase secrets set \
-  GEMINI_API_KEY=YOUR_GEMINI_KEY \
-  GEMINI_MODEL=gemini-2.5-flash-lite
-npx supabase functions deploy financial-coach
-```
-
-The client never receives the Gemini key or a privileged Supabase key.
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the full release sequence and credentialed smoke test.
-
-## Verify the project
-
-```bash
-cd react-expo-app
-npm ci
-npm audit --omit=dev --audit-level=high
-npx expo-doctor
 npm test
 npm run lint
 npm run typecheck
 npm run test:e2e
 ```
 
-Check the Edge Function from the repository root:
+That's 36 unit tests plus browser tests. The browser tests go through the whole demo on desktop, a phone-sized screen and dark mode. CI also runs a security audit, Expo Doctor and a type check on the Edge Function.
 
-```bash
-deno check --config supabase/functions/deno.json \
-  supabase/functions/financial-coach/index.ts
-```
+## Privacy
 
-The current suite covers domain calculations, validation, auth modes, local and Supabase repositories, AI contracts, quota security, login, dashboard, purchase completion, reports, desktop flow, mobile overflow, dark mode, and reduced motion.
+Signed-in users can only see their own data. NudgeFund is for learning and reflection, not financial, tax or investment advice. See [SECURITY.md](SECURITY.md) and [docs/PRIVACY.md](docs/PRIVACY.md).
 
-## Security and privacy
+## Who built it
 
-- Never commit `.env.local`, Supabase secret keys, service-role keys, or Gemini keys.
-- Treat any key committed in earlier history as compromised and revoke it.
-- Demo data stays on the current device.
-- Connected data uses Supabase RLS so users can access only their own profile and decisions.
-- NudgeFund provides educational information. It does not provide investment, tax, legal, or individualized financial advice.
-
-Read [SECURITY.md](SECURITY.md) and [docs/PRIVACY.md](docs/PRIVACY.md) before operating a public instance.
-
-## Contributors
-
-Built by **Rahul Rajkumar** and **Shlok Bhutani**.
-
-Rahul created the original concept and early implementation. Shlok led the current security, architecture, product, testing, and deployment-readiness rebuild.
+**Rahul Rajkumar** came up with the idea and the first version. **Shlok Bhutani** led the rebuild: security, architecture, testing and getting it ready to deploy.
 
 ## License
 
