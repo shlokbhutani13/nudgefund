@@ -120,7 +120,7 @@ export default function DecisionsScreen() {
         );
       }}
       onNewDecision={() =>
-        router.push("/(app)/budget/new")
+        router.push("/check-purchase")
       }
     />
   );

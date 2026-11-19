@@ -3,6 +3,11 @@ import { Tabs } from "expo-router";
 import { useWindowDimensions } from "react-native";
 import { useAppTheme } from "@/constants/theme";
 
+// Tab bar colors can be numbers or null in React Native's types; Ionicons only takes strings.
+function tabIconColor(color: unknown): string | undefined {
+  return typeof color === "string" ? color : undefined;
+}
+
 export default function AppLayout() {
   const palette = useAppTheme();
   const { width } = useWindowDimensions();
@@ -42,7 +47,7 @@ export default function AppLayout() {
             "Overview dashboard",
           tabBarIcon: ({ color, size }) => (
             <Ionicons
-              color={color}
+              color={tabIconColor(color)}
               name="home-outline"
               size={size}
             />
@@ -55,7 +60,7 @@ export default function AppLayout() {
           title: "Decisions",
           tabBarIcon: ({ color, size }) => (
             <Ionicons
-              color={color}
+              color={tabIconColor(color)}
               name="list-outline"
               size={size}
             />
@@ -68,7 +73,7 @@ export default function AppLayout() {
           title: "Growth",
           tabBarIcon: ({ color, size }) => (
             <Ionicons
-              color={color}
+              color={tabIconColor(color)}
               name="trending-up-outline"
               size={size}
             />
@@ -81,22 +86,11 @@ export default function AppLayout() {
           title: "Reports",
           tabBarIcon: ({ color, size }) => (
             <Ionicons
-              color={color}
+              color={tabIconColor(color)}
               name="bar-chart-outline"
               size={size}
             />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="budget/new"
-        options={{
-          href: null,
-          headerShown: false,
-          title: "Purchase check",
-          tabBarStyle: {
-            display: "none",
-          },
         }}
       />
     </Tabs>

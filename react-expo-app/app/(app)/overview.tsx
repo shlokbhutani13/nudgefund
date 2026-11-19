@@ -178,7 +178,7 @@ export default function OverviewScreen() {
         setEditingProfile(true)
       }
       onNewDecision={() =>
-        router.push("/(app)/budget/new")
+        router.push("/check-purchase")
       }
       onOpenDecisions={() =>
         router.push("/(app)/budget")

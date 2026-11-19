@@ -11,7 +11,8 @@ export default function NewPurchaseScreen() {
       onCancel={() => router.back()}
       onComplete={async (decision) => {
         await services.decisions.create(decision);
-        router.replace("/(app)/budget");
+        // Go back to the existing tabs instead of stacking a second copy of them.
+        router.dismissTo("/(app)/budget");
       }}
     />
   );

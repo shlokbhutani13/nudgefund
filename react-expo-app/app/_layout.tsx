@@ -62,6 +62,7 @@ function InitialLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(app)" />
       <Stack.Screen name="(auth)" />
+      <Stack.Screen name="check-purchase" options={{ title: "Purchase check" }} />
     </Stack>
   );
 }
